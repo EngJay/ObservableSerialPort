@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "jsx": "react",
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "module": "commonjs",
+        "target": "es6",
+        "noEmitOnError": true,
+        "removeComments": false
+    },
+    "files": [
+        "typings/index.d.ts"
+    ]
+}
