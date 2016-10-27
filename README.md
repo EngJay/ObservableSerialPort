@@ -2,6 +2,6 @@ Observable serial port.
 
 Run tests with 
 
-npm install
-npm run test-watch
+    npm install
+    npm run test-watch
 
