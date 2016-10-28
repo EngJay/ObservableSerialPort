@@ -1,4 +1,12 @@
+
+
+![status](https://travis-ci.org/epinxteren/ObservableSerialPort.svg?branch=master)
+
+
 Observable serial port.
+
+
+
 
 Run tests with 
 
