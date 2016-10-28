@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {ObservableSerialPort} from "../ObservableSerialPort";
-import {SerialPortInterface} from "../UartInterface";
+import {SerialPortInterface} from "../SerialPortInterface";
 
 
 

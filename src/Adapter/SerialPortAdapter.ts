@@ -1,5 +1,5 @@
 import * as SerialPort from "serialport";
-import {SerialPortInterface} from "./UartInterface";
+import {SerialPortInterface} from "../SerialPortInterface";
 
 export class SerialPortAdapter implements SerialPortInterface {
 

@@ -1,5 +1,5 @@
 import {CommunicationInterface} from "./CommunicationInterface";
-import {SerialPortInterface} from "./UartInterface";
+import {SerialPortInterface} from "./SerialPortInterface";
 import {Observable, Subscriber} from "rxjs";
 
 export class ObservableSerialPort implements CommunicationInterface<string> {
