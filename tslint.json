@@ -1,60 +1,43 @@
 {
   "rules": {
-    "class-name": true,
     "curly": true,
     "eofline": false,
-    "forin": true,
-    "indent": [
-      true,
-      4
-    ],
-    "label-position": true,
-    "label-undefined": true,
-    "max-line-length": [
-      true,
-      140
-    ],
-    "no-arg": true,
-    "no-bitwise": true,
-    "no-console": [
-      true,
-      "debug",
-      "info",
-      "time",
-      "timeEnd",
-      "trace"
-    ],
-    "no-construct": true,
-    "no-debugger": true,
+    "align": [true, "parameters"],
+    "class-name": true,
+    "indent": [true, "spaces"],
+    "max-line-length": [true, 150],
+    "no-consecutive-blank-lines": true,
+    "no-trailing-whitespace": true,
     "no-duplicate-key": true,
     "no-duplicate-variable": true,
-    "no-empty": false,
-    "no-eval": true,
-    "no-string-literal": false,
-    "no-trailing-whitespace": true,
-    "no-unused-variable": false,
     "no-unreachable": true,
+    "no-var-keyword": true,
+    "no-empty": true,
+    "no-unused-expression": true,
+    "no-unused-variable": true,
     "no-use-before-declare": true,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
+    "no-var-requires": true,
+    "no-require-imports": true,
+    "one-line": [true,
       "check-else",
-      "check-whitespace"
-    ],
-    "radix": true,
+      "check-whitespace",
+      "check-open-brace"],
+    "quotemark": [true,
+      "single",
+      "avoid-escape"],
     "semicolon": true,
-    "triple-equals": [
-      true,
-      "allow-null-check"
-    ],
-    "variable-name": false,
-    "whitespace": [
-      true,
+    "typedef-whitespace": [true, {
+      "call-signature": "nospace",
+      "index-signature": "nospace",
+      "parameter": "nospace",
+      "property-declaration": "nospace",
+      "variable-declaration": "nospace"
+    }],
+    "whitespace": [true,
       "check-branch",
       "check-decl",
       "check-operator",
-      "check-separator"
-    ]
+      "check-separator",
+      "check-type"]
   }
 }

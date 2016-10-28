@@ -17,7 +17,9 @@ module.exports =  {
 
         preLoaders: [
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            {test: /\.js$/, loader: "source-map-loader"}
+            {test: /\.js$/, loader: "source-map-loader"},
+
+            {test: /\.tsx?$/, loader: "tslint"}
         ]
     },
 
@@ -25,6 +27,13 @@ module.exports =  {
         logInfoToStdOut: true,
         logLevel: 'info'
     },
+
+    tslint: {
+        // tslint errors are displayed by default as warnings
+        // set emitErrors to true to display them as errors
+        emitErrors: true
+    },
+
     target: "node",
     externals: [nodeExternals()]
 };
