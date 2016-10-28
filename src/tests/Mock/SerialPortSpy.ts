@@ -2,9 +2,9 @@ import {SerialPortInterface} from '../../SerialPortInterface';
 
 export class SerialPortSpy implements SerialPortInterface {
 
-    public countPortOpened = 0;
+    public timesPortOpened = 0;
     public countPortReceived = 0;
-    public countPortClosed = 0;
+    public timesPortClosed = 0;
     public isOpen: boolean = false;
     public opOpenCallback: () => void;
     public opCloseCallback: () => void;
@@ -32,7 +32,7 @@ export class SerialPortSpy implements SerialPortInterface {
     }
 
     open(callback: (err?: string) => void): void {
-        this.countPortOpened += 1;
+        this.timesPortOpened += 1;
         this.isOpen = true;
         callback();
         if (this.opOpenCallback) {
@@ -47,7 +47,7 @@ export class SerialPortSpy implements SerialPortInterface {
     }
 
     close(callback?: (err: any) => void): void {
-        this.countPortClosed += 1;
+        this.timesPortClosed += 1;
         this.isOpen = false;
         if (this.opCloseCallback) {
             this.opCloseCallback();

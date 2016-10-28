@@ -4,68 +4,80 @@ import {SerialPortInterface} from '../SerialPortInterface';
 import {SerialPortSpy} from './Mock/SerialPortSpy';
 
 describe('SerialPort', function () {
-    let countPortReceived = 0;
+    let timesPortReceived = 0;
     let serialPortSpy: SerialPortSpy;
     let observerSerialPort: ObservableSerialPort;
 
     beforeEach(() => {
-        countPortReceived = 0;
+        timesPortReceived = 0;
         serialPortSpy = new SerialPortSpy();
         observerSerialPort = new ObservableSerialPort(serialPortSpy);
     });
 
+    function assertPortClosed(times: number) {
+        assert.equal(serialPortSpy.timesPortClosed, times, `The SerialPort should only be closed ${times} time('s)`);
+    }
+
+    function assertPortOpened(times: number) {
+        assert.equal(serialPortSpy.timesPortOpened, times, `The SerialPort should only be opened ${times} time('s)`);
+    }
+
+    function assertPortReceived(times: number) {
+        assert.equal(timesPortReceived, times, `The port should be received ${times} time`);
+    }
+
     it('Should open and close the port', () => {
         let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
             assert.equal(port, serialPortSpy);
-            countPortReceived++;
+            timesPortReceived++;
         });
 
         subscription1.unsubscribe();
 
-        assert.equal(countPortReceived, 1, 'The port should be received 1 time');
-        assert.equal(serialPortSpy.countPortClosed, 1, 'The SerialPort should only be closed a single time');
-        assert.equal(serialPortSpy.countPortOpened, 1, 'The SerialPort should only be opened a single time');
+        assertPortClosed(1);
+        assertPortOpened(1);
+        assertPortReceived(1);
     });
 
-    it('Should open and close the port only a single time', () => {
+    it('Should open and close the port only a single time with multiple subscriptions', () => {
         let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
             assert.equal(port, serialPortSpy);
-            countPortReceived++;
+            timesPortReceived++;
         });
 
         let subscription2 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
             assert.equal(port, serialPortSpy);
-            countPortReceived++;
+            timesPortReceived++;
         });
 
         subscription1.unsubscribe();
         subscription2.unsubscribe();
 
-        assert.equal(countPortReceived, 2, 'The next port should be received 2 times');
-        assert.equal(serialPortSpy.countPortClosed, 1, 'The SerialPort should only be closed a single time');
-        assert.equal(serialPortSpy.countPortOpened, 1, 'The SerialPort should only be opened a single time');
+        assertPortClosed(1);
+        assertPortOpened(1);
+        assertPortReceived(2);
     });
 
-    it('It should reopen the port when previous is closed ', () => {
+    it('It should reopen the port when previous subscription is closed ', () => {
         let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
             assert.equal(port, serialPortSpy);
-            countPortReceived++;
+            timesPortReceived++;
         });
 
         subscription1.unsubscribe();
 
-        assert.equal(countPortReceived, 2, 'The port should be received a single time');
-        assert.equal(serialPortSpy.countPortClosed, 2, 'The SerialPort should only be closed 1 time');
-        assert.equal(serialPortSpy.countPortOpened, 2, 'The SerialPort should only be opened 1 time');
+        assertPortClosed(1);
+        assertPortOpened(1);
+        assertPortReceived(1);
 
         let subscription2 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
             assert.equal(port, serialPortSpy);
-            countPortReceived++;
+            timesPortReceived++;
         });
         subscription2.unsubscribe();
 
-        assert.equal(countPortReceived, 2, 'The port should be received 2 times');
-        assert.equal(serialPortSpy.countPortClosed, 2, 'The SerialPort should only be closed 2 times');
-        assert.equal(serialPortSpy.countPortOpened, 2, 'The SerialPort should only be opened 2 times');
+        assertPortClosed(2);
+        assertPortOpened(2);
+        assertPortReceived(2);
     });
 });

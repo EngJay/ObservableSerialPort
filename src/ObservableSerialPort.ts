@@ -7,7 +7,7 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
     /**
      * This is a shared observer for referencing the port.
      *
-     * - Keeps the port open, when subscribed to multple times.
+     * - Keeps the port open, when subscribed to multiple times.
      * - Closed the port when all subscriptions are gone.
      */
     private shared: Observable<SerialPortInterface>;
