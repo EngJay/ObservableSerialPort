@@ -1,5 +1,5 @@
-import * as SerialPort from "serialport";
-import {SerialPortInterface} from "../SerialPortInterface";
+import * as SerialPort from 'serialport';
+import {SerialPortInterface} from '../SerialPortInterface';
 
 export class SerialPortAdapter implements SerialPortInterface {
 
@@ -23,17 +23,16 @@ export class SerialPortAdapter implements SerialPortInterface {
         this.port.on('error', callback);
     }
 
-    open(callback: (err: string) => void): void {
+    open(callback: (err?: string) => void): void {
         this.port.open(<any>callback);
     }
 
-    write(buffer: any, callback?: (err: string, bytesWritten: number) => void): void {
+    send(buffer: any, callback?: (err: string | null, bytesWritten: number) => void): void {
         this.port.write(buffer, callback);
     }
 
-    close(callback?: (err:any) => void): void {
+    close(callback?: (err: string) => void): void {
         this.port.close(callback);
     }
 
 }
-

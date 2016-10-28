@@ -1,6 +1,6 @@
-import {CommunicationInterface} from "./CommunicationInterface";
-import {SerialPortInterface} from "./SerialPortInterface";
-import {Observable, Subscriber} from "rxjs";
+import {CommunicationInterface} from './CommunicationInterface';
+import {SerialPortInterface} from './SerialPortInterface';
+import {Observable, Subscriber} from 'rxjs';
 
 export class ObservableSerialPort implements CommunicationInterface<string> {
 
@@ -38,49 +38,10 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
 
     public send(data: string): Observable<string> {
         return null;
-        // return this.getPort().subscribe();
     }
 
     public listen(): Observable<string> {
         return null;
     }
 
-//
-//     public send(data: string): this {
-//
-//
-//
-//
-//         let successCallback = Observable.bindCallback((err, bytesWritten, cb) => {
-//
-//         });
-//
-//         myPort.write(data, successCallback);
-//
-//         return this;
-//     }
-//
-//     public observer(): Observable<string> {
-//
-// //         var serialport = require('serialport'),// include the library
-// //             SerialPort = serialport.SerialPort,    // make a local instance of it
-// //             portName = process.argv[2],            // get port name from the command line
-// //             datarate = parseInt(process.argv[3], 10);
-// //
-// //         var myPort = new SerialPort(portName, {
-// //             baudRate: datarate,
-// //             // look for return and newline at the end of each data packet:
-// //             parser: serialport.parsers.readline('\r\n')
-// //         });
-// //
-// // // these are the definitions for the serial events:
-// //         myPort.on('open', showPortOpen);
-// //         myPort.on('data', saveLatestData);
-// //         myPort.on('close', showPortClose);
-// //         myPort.on('error', showError);
-//     }
-//
-
-
 }
-
