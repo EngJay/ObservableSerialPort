@@ -41,6 +41,9 @@ export class SerialPortSpy implements SerialPortInterface {
     }
 
     send(buffer: string, callback?: (err: string | null, bytesWritten: number) => void): void {
+        if (!this.isOpen) {
+            throw 'Port is not open';
+        }
         this.dataSend.push(buffer);
         this.lastSend = buffer;
         callback(null, buffer.length);

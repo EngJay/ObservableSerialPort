@@ -12,19 +12,23 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
      */
     private portObserver: Observable<SerialPortInterface>;
 
+    private dataObserver: Observable<string>;
+
     constructor(private port: SerialPortInterface) {
         this.portObserver = Observable.create((subscriber: Subscriber<SerialPortInterface>) => {
             this.port.open((err?: string) => {
-                    if (err) {
-                        subscriber.error(err);
-                    } else {
-                        subscriber.next(this.port);
-                    }
+                if (err) {
+                    subscriber.error(err);
+                } else {
+                    subscriber.next(this.port);
+                }
             });
             return () => {
                 this.port.close();
             };
         }).multicast(new Subject()).refCount();
+
+        this.dataObserver = Observable.bindNodeCallback<string>(this.port.onData.bind(this.port))();
     }
 
     public getPort(): Observable<SerialPortInterface> {
@@ -39,16 +43,21 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
     public send(message?: string): any {
         if (message) {
             let sendMessage: (message: string) => Observable<void> = Observable.bindNodeCallback<void>(this.port.send.bind(this.port));
-            return this.getPort()
-                .concatMap(port => sendMessage(message))
-                .map(x => message)
-                .take(1);
+            return this.getPort().take(1)
+                .mergeMap(port => sendMessage(message))
+                // TODO: is there a cleaner way to pass the message instead of the port?
+                .map(x => message);
         }
         return (message: string) => this.send(message);
     }
 
+    /**
+     * Listen to messages.
+     *
+     * @returns {any}
+     */
     public listen(): Observable<string> {
-        return null;
+        return this.getPort().mergeMap(port => this.dataObserver) ;
     }
 
 }

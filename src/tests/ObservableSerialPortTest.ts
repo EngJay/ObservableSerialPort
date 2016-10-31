@@ -27,6 +27,12 @@ describe('SerialPort', function () {
         );
     }
 
+    function assertPortOpenedAndClosed(times: number) {
+        assert.equal( serialPortSpy.isOpen, false, `The SerialPort should not be open`);
+        assertPortOpened(times);
+        assertPortClosed(times);
+    }
+
     function assertPortReceived(times: number) {
         assert.equal(timesPortReceived, times, `The port should be received ${times} times not ${timesPortReceived} times`);
     }
@@ -41,8 +47,7 @@ describe('SerialPort', function () {
 
             subscription1.unsubscribe();
 
-            assertPortClosed(1);
-            assertPortOpened(1);
+            assertPortOpenedAndClosed(1);
             assertPortReceived(1);
         });
 
@@ -60,8 +65,7 @@ describe('SerialPort', function () {
             subscription1.unsubscribe();
             subscription2.unsubscribe();
 
-            assertPortClosed(1);
-            assertPortOpened(1);
+            assertPortOpenedAndClosed(1);
             assertPortReceived(2);
         });
 
@@ -73,8 +77,7 @@ describe('SerialPort', function () {
 
             subscription1.unsubscribe();
 
-            assertPortClosed(1);
-            assertPortOpened(1);
+            assertPortOpenedAndClosed(1);
             assertPortReceived(1);
 
             let subscription2 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
@@ -83,8 +86,7 @@ describe('SerialPort', function () {
             });
             subscription2.unsubscribe();
 
-            assertPortClosed(2);
-            assertPortOpened(2);
+            assertPortOpenedAndClosed(2);
             assertPortReceived(2);
         });
 
@@ -100,8 +102,7 @@ describe('SerialPort', function () {
 
             assert.equal('test', serialPortSpy.lastSend, `Should have send the message`);
 
-            assertPortClosed(1);
-            assertPortOpened(1);
+            assertPortOpenedAndClosed(1);
         });
 
         it('Be able to send multiple messages in same order.', () => {
@@ -113,8 +114,23 @@ describe('SerialPort', function () {
 
             assert.deepEqual(['1', '2', '3'], serialPortSpy.dataSend);
 
-            assertPortClosed(3);
-            assertPortOpened(3);
+            assertPortOpenedAndClosed(3);
+        });
+
+        it.skip('Be able to send multiple messages in any order.', (done) => {
+            Observable
+                .timer(10)
+                .take(3)
+                .map(x => `${x}`)
+                .mergeMap(observerSerialPort.send())
+                .subscribe(null, null,
+                    () => {
+                        assert.deepEqual(['0', '1', '2'], serialPortSpy.dataSend);
+
+                        // TODO: this should be one, port should be open for the complete observer.
+                        assertPortOpenedAndClosed(3);
+                        done();
+                    });
         });
 
     });
