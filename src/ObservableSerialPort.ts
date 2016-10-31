@@ -1,19 +1,19 @@
 import {CommunicationInterface} from './CommunicationInterface';
 import {SerialPortInterface} from './SerialPortInterface';
-import {Observable, Subscriber} from 'rxjs';
+import {Observable, Subscriber, Subject} from 'rxjs';
 
 export class ObservableSerialPort implements CommunicationInterface<string> {
 
     /**
-     * This is a shared observer for referencing the port.
+     * This is a portObserver observer for referencing the port.
      *
      * - Keeps the port open, when subscribed to multiple times.
      * - Closed the port when all subscriptions are gone.
      */
-    private shared: Observable<SerialPortInterface>;
+    private portObserver: Observable<SerialPortInterface>;
 
     constructor(private port: SerialPortInterface) {
-        this.shared = Observable.create((subscriber: Subscriber<SerialPortInterface>) => {
+        this.portObserver = Observable.create((subscriber: Subscriber<SerialPortInterface>) => {
             this.port.open((err?: string) => {
                     if (err) {
                         subscriber.error(err);
@@ -24,20 +24,27 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
             return () => {
                 this.port.close();
             };
-        }).share();
+        }).multicast(new Subject()).refCount();
+    }
+
+    public getPort(): Observable<SerialPortInterface> {
+        return this.portObserver;
     }
 
     /**
-     * This return the serial port observer.
-     *
-     * It opens the port a single time when it is subscribed. And closes when nothing is subscribed any more.
+     * Send message and return on complete observer.
      */
-    public getPort(): Observable<SerialPortInterface> {
-        return this.shared;
-    }
-
-    public send(data: string): Observable<string> {
-        return null;
+    public send(message: string): Observable<void>;
+    public send(): (message: string) => Observable<void>;
+    public send(message?: string): any {
+        if (message) {
+            let sendMessage: (message: string) => Observable<void> = Observable.bindNodeCallback<void>(this.port.send.bind(this.port));
+            return this.getPort()
+                .concatMap(port => sendMessage(message))
+                .map(x => message)
+                .take(1);
+        }
+        return (message: string) => this.send(message);
     }
 
     public listen(): Observable<string> {
