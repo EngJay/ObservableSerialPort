@@ -1,6 +1,6 @@
 import {CommunicationInterface} from './CommunicationInterface';
 import {SerialPortInterface} from './SerialPortInterface';
-import {Observable, Subscriber, Subject} from 'rxjs';
+import {Observable, Subscriber} from 'rxjs';
 
 export class ObservableSerialPort implements CommunicationInterface<string> {
 
@@ -15,19 +15,28 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
     private dataObserver: Observable<string>;
 
     constructor(private port: SerialPortInterface) {
+        // TODO: this looks like a hack.., could this be solved by something.
+        let observers = 0;
         this.portObserver = Observable.create((subscriber: Subscriber<SerialPortInterface>) => {
-            this.port.open((err?: string) => {
-                if (err) {
-                    subscriber.error(err);
-                } else {
-                    subscriber.next(this.port);
-                }
-            });
+            observers++;
+            if (observers === 1) {
+                this.port.open((err?: string) => {
+                    if (err) {
+                        subscriber.error(err);
+                    } else {
+                        subscriber.next(this.port);
+                    }
+                });
+            } else {
+                subscriber.next(this.port);
+            }
             return () => {
-                this.port.close();
+                observers--;
+                if (observers === 0) {
+                    this.port.close();
+                }
             };
-        }).multicast(new Subject()).refCount();
-
+        });
         this.dataObserver = Observable.bindNodeCallback<string>(this.port.onData.bind(this.port))();
     }
 
@@ -43,9 +52,9 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
     public send(message?: string): any {
         if (message) {
             let sendMessage: (message: string) => Observable<void> = Observable.bindNodeCallback<void>(this.port.send.bind(this.port));
-            return this.getPort().take(1)
+            return this.getPort()
+                .take(1)
                 .mergeMap(port => sendMessage(message))
-                // TODO: is there a cleaner way to pass the message instead of the port?
                 .map(x => message);
         }
         return (message: string) => this.send(message);
@@ -57,7 +66,7 @@ export class ObservableSerialPort implements CommunicationInterface<string> {
      * @returns {any}
      */
     public listen(): Observable<string> {
-        return this.getPort().mergeMap(port => this.dataObserver) ;
+        return this.getPort().mergeMap(port => this.dataObserver);
     }
 
 }

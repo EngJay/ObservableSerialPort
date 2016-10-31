@@ -28,7 +28,7 @@ describe('SerialPort', function () {
     }
 
     function assertPortOpenedAndClosed(times: number) {
-        assert.equal( serialPortSpy.isOpen, false, `The SerialPort should not be open`);
+        assert.equal(serialPortSpy.isOpen, false, `The SerialPort should not be open`);
         assertPortOpened(times);
         assertPortClosed(times);
     }
@@ -51,7 +51,7 @@ describe('SerialPort', function () {
             assertPortReceived(1);
         });
 
-        it.skip('Should open and close the port only a single time with multiple subscriptions', () => {
+        it('Should open and close the port only a single time with multiple subscriptions', () => {
             let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
                 timesPortReceived++;
@@ -117,13 +117,15 @@ describe('SerialPort', function () {
             assertPortOpenedAndClosed(3);
         });
 
-        it.skip('Be able to send multiple messages in any order.', (done) => {
+        it('Be able to send multiple messages in any order.', (done) => {
             Observable
-                .timer(10)
+                .interval(10)
                 .take(3)
                 .map(x => `${x}`)
                 .mergeMap(observerSerialPort.send())
-                .subscribe(null, null,
+                .subscribe(
+                    null,
+                    null,
                     () => {
                         assert.deepEqual(['0', '1', '2'], serialPortSpy.dataSend);
 
