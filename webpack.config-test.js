@@ -5,6 +5,11 @@ module.exports =  {
     debug: true,
     devtool: "cheap-module-source-map",
 
+    output: {
+        devtoolModuleFilenameTemplate        : '[absolute-resource-path]',
+        devtoolFallbackModuleFilenameTemplate: '[absolute-resource-path]?[hash]'
+    },
+
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
         extensions: ["", ".webpack.js", ".ts", ".tsx", ".js"]

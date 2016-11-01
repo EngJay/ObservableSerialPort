@@ -4,8 +4,8 @@
   "description": "Serial port as observerable",
   "main": "index.js",
   "scripts": {
-    "test": "mocha-webpack --webpack-config webpack.config-test.js \"src/tests/**/*.ts\"",
-    "test-watch": "mocha-webpack --watch --webpack-config webpack.config-test.js \"src/tests/**/*.ts\"",
+    "test": "mocha-webpack --opts mocha-webpack.opts",
+    "test-watch": "mocha-webpack --opts mocha-webpack.opts --watch",
     "postinstall": "typings install"
   },
   "author": "Eric Pinxteren",
@@ -15,7 +15,7 @@
     "mocha": "^3.1.2",
     "mocha-webpack": "^0.7.0",
     "source-map-loader": "^0.1.5",
-    "source-map-support": "^0.4.5",
+    "source-map-support": "^0.4.6",
     "ts-loader": "^0.9.5",
     "tslint": "^3.15.1",
     "tslint-loader": "^2.1.5",
