@@ -1,5 +1,5 @@
 {
-  "name": "talk-rr",
+  "name": "ObservableSerialPort",
   "version": "1.0.0",
   "description": "Serial port as observerable",
   "main": "index.js",

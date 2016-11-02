@@ -3,4 +3,4 @@
 --webpack-config webpack.config-test.js
 --timeout 0
 --inline-diffs
-src/**/*.Test.ts
+src/tests/**/*Test.ts
