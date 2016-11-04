@@ -1,10 +1,16 @@
-import {Observable} from 'rxjs';
+import {Subject, Observable} from 'rxjs';
 
-interface CommunicationInterface<T>{
+interface CommunicationInterface<T> extends Subject<string>{
 
-    send(message: T): Observable<void>;
-    send(): (message: T) => Observable<void>;
+    /**
+     * Send a message and returns the object when message has been send.
+     */
+    send(message: T): Observable<string>;
+    send(): (message: T) => Observable<string>;
 
+    /**
+     * Alias for asObservable.
+     */
     listen(): Observable<T>;
 }
 

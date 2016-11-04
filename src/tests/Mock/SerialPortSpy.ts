@@ -42,7 +42,7 @@ export class SerialPortSpy implements SerialPortInterface {
 
     send(buffer: string, callback?: (err: string | null, bytesWritten: number) => void): void {
         if (!this.isOpen) {
-            throw 'Port is not open';
+            throw new Error('Port is not open');
         }
         this.dataSend.push(buffer);
         this.lastSend = buffer;
@@ -50,6 +50,9 @@ export class SerialPortSpy implements SerialPortInterface {
     }
 
     close(callback?: (err: any) => void): void {
+        if (!this.isOpen) {
+            throw new Error('Port is not open');
+        }
         this.timesPortClosed += 1;
         this.isOpen = false;
         if (this.opCloseCallback) {

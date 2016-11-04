@@ -1,18 +1,17 @@
 import * as assert from 'assert';
-import {ObservableSerialPort} from '../ObservableSerialPort';
+import {SerialPortSubject} from '../SerialPortSubject';
 import {SerialPortInterface} from '../SerialPortInterface';
 import {SerialPortSpy} from './Mock/SerialPortSpy';
 import {Observable} from 'rxjs';
+import {DelayAbleSerialPortSpy} from './Mock/DelayAbleSerialPortSpy';
 
 describe('SerialPort', function () {
-    let timesPortReceived = 0;
     let serialPortSpy: SerialPortSpy;
-    let observerSerialPort: ObservableSerialPort;
+    let serialPortSubject: SerialPortSubject;
 
     beforeEach(() => {
-        timesPortReceived = 0;
         serialPortSpy = new SerialPortSpy();
-        observerSerialPort = new ObservableSerialPort(serialPortSpy);
+        serialPortSubject = new SerialPortSubject(serialPortSpy);
     });
 
     function assertPortClosed(times: number) {
@@ -33,71 +32,103 @@ describe('SerialPort', function () {
         assertPortClosed(times);
     }
 
-    function assertPortReceived(times: number) {
-        assert.equal(timesPortReceived, times, `The port should be received ${times} times not ${timesPortReceived} times`);
-    }
+    describe('getOpenPort open and close.', function () {
 
-    describe('Open and close port.', function () {
+        it('Subscribe a single observer to the getOpenPort.', () => {
+            let received = [];
 
-        it('Subscribe a single observer to the port.', () => {
-            let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
+            let subscription1 = serialPortSubject.getOpenPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
-                timesPortReceived++;
+                received.push(1);
             });
 
             subscription1.unsubscribe();
 
             assertPortOpenedAndClosed(1);
-            assertPortReceived(1);
+            assert.deepEqual(received, [1]);
         });
 
         it('Should open and close the port only a single time with multiple subscriptions', () => {
-            let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
+            let received = [];
+
+            let subscription1 = serialPortSubject.getOpenPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
-                timesPortReceived++;
+                received.push(1);
             });
 
-            let subscription2 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
+            let subscription2 = serialPortSubject.getOpenPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
-                timesPortReceived++;
+                received.push(2);
             });
 
             subscription1.unsubscribe();
             subscription2.unsubscribe();
 
             assertPortOpenedAndClosed(1);
-            assertPortReceived(2);
+            assert.deepEqual(received, [1, 2]);
         });
 
         it('It should reopen the port when previous subscription is closed ', () => {
-            let subscription1 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
+            let received = [];
+
+            let subscription1 = serialPortSubject.getOpenPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
-                timesPortReceived++;
+                received.push(1);
             });
 
             subscription1.unsubscribe();
 
             assertPortOpenedAndClosed(1);
-            assertPortReceived(1);
+            assert.deepEqual(received, [1]);
 
-            let subscription2 = observerSerialPort.getPort().subscribe((port: SerialPortInterface) => {
+            let subscription2 = serialPortSubject.getOpenPort().subscribe((port: SerialPortInterface) => {
                 assert.equal(port, serialPortSpy);
-                timesPortReceived++;
+                received.push(2);
             });
             subscription2.unsubscribe();
 
             assertPortOpenedAndClosed(2);
-            assertPortReceived(2);
+            assert.deepEqual(received, [1, 2]);
         });
 
     });
 
-    describe('Use the send message observer.', () => {
+    describe('subscribe should open and close the port.', function () {
 
-        it('Send a single message.', () => {
-            observerSerialPort
-                .send('test')
-                .subscribe()
+        it('Subscribe a single observer to the port.', () => {
+            serialPortSubject.subscribe().unsubscribe();
+            assertPortOpenedAndClosed(1);
+        });
+
+        it('Should open and close the port only a single time with multiple subscriptions', () => {
+            let subscription1 = serialPortSubject.subscribe();
+            let subscription2 = serialPortSubject.subscribe();
+
+            subscription1.unsubscribe();
+            subscription2.unsubscribe();
+
+            assertPortOpenedAndClosed(1);
+        });
+
+        it('It should reopen the port when previous subscription is closed ', () => {
+            let subscription1 = serialPortSubject.subscribe();
+            subscription1.unsubscribe();
+
+            assertPortOpenedAndClosed(1);
+
+            let subscription2 = serialPortSubject.subscribe();
+            subscription2.unsubscribe();
+
+            assertPortOpenedAndClosed(2);
+        });
+
+    });
+
+    describe('Sending.', () => {
+
+        it('Single message.', () => {
+            Observable.of('test')
+                .subscribe(serialPortSubject)
                 .unsubscribe();
 
             assert.equal('test', serialPortSpy.lastSend, `Should have send the message`);
@@ -105,24 +136,36 @@ describe('SerialPort', function () {
             assertPortOpenedAndClosed(1);
         });
 
-        it('Be able to send multiple messages in same order.', () => {
+        it('Wait for single message.', (callback) => {
+            Observable.of('test')
+                .concatMap(serialPortSubject.send())
+                .subscribe((messageSend) => {
+                        assert.equal('test', messageSend, `Should have send the message`);
+                    }, null,
+                    () => {
+                        assertPortOpenedAndClosed(1);
+                        callback();
+                    }
+                );
+        });
+
+        it('Multiple messages in same order.', () => {
             Observable
                 .of('1', '2', '3')
-                .concatMap(observerSerialPort.send())
-                .subscribe()
+                .subscribe(serialPortSubject)
                 .unsubscribe();
 
             assert.deepEqual(['1', '2', '3'], serialPortSpy.dataSend);
 
-            assertPortOpenedAndClosed(3);
+            assertPortOpenedAndClosed(1);
         });
 
-        it('Be able to send multiple messages in any order.', (done) => {
+        it('Wait for async message.', (done) => {
             Observable
                 .interval(10)
                 .take(3)
                 .map(x => `${x}`)
-                .mergeMap(observerSerialPort.send())
+                .mergeMap(serialPortSubject.send())
                 .subscribe(
                     null,
                     null,
@@ -137,4 +180,25 @@ describe('SerialPort', function () {
 
     });
 
+    describe('Sending with async callbacks.', () => {
+
+        beforeEach(() => {
+            serialPortSpy = new DelayAbleSerialPortSpy(10);
+            serialPortSubject = new SerialPortSubject(serialPortSpy);
+        });
+
+        it.skip('Wait for single message.', (callback) => {
+            Observable.of('test')
+                .concatMap(serialPortSubject.send())
+                .subscribe((messageSend) => {
+                        assert.equal('test', messageSend, `Should have send the message`);
+                    }, null,
+                    () => {
+                        assertPortOpenedAndClosed(1);
+                        callback();
+                    }
+                );
+        });
+
+    });
 });
