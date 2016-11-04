@@ -49,7 +49,7 @@ export class SerialPortSubject extends AnonymousSubject<string> implements Commu
     }
 
     /**
-     * Sending a message and returns observer when message is completely send.
+     * Sending a message and returns observer when the message is completely send.
      */
     public send(message: string): Observable<string>;
     public send(): (message: string) => Observable<string>;
@@ -57,19 +57,18 @@ export class SerialPortSubject extends AnonymousSubject<string> implements Commu
         if (!message) {
             return (message: string) => this.send(message);
         }
-        let sendMessage: (message: string) => Observable<void> = Observable.bindNodeCallback<void>(this.port.send.bind(this.port));
-        return this.getOpenPort().do(() => {
-            console.log('open port');
-        }, null, () => {
-            console.log('close port');
-        }).first().mergeMap(port => {
-            console.log('Sending message');
-            return sendMessage(message).do(() => {
-                console.log('Message send');
-            }, null, () => {
-                console.log('Message send complete');
+        let sendMessage: (message: string) => Observable<number> = Observable.bindNodeCallback<number>(this.port.send.bind(this.port));
+        return Observable.create((subscriber: Subscriber<string>) => {
+            let subscription = this.getOpenPort().subscribe(() => {
+                sendMessage(message).subscribe((length: number) => {
+                    subscriber.next(message);
+                    subscriber.complete();
+                }, err => subscriber.error(err));
             });
-        }).mapTo(message);
+            return () => {
+                subscription.unsubscribe();
+            };
+        });
     }
 
     /**

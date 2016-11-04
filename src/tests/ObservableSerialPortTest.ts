@@ -189,7 +189,7 @@ describe('SerialPort', function () {
 
         it.skip('Wait for single message.', (callback) => {
             Observable.of('test')
-                .concatMap(serialPortSubject.send())
+                .mergeMap(serialPortSubject.send())
                 .subscribe((messageSend) => {
                         assert.equal('test', messageSend, `Should have send the message`);
                     }, null,
