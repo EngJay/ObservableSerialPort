@@ -6,37 +6,37 @@ export class SerialPortSpy implements SerialPortInterface {
     public countPortReceived = 0;
     public timesPortClosed = 0;
     public isOpen: boolean = false;
-    public opOpenCallback: () => void;
-    public opCloseCallback: () => void;
-    public opErrorCallback: (error: string) => void;
-    public opDataCallback: (message: string) => void;
+    public onOpenCallback: () => void;
+    public onCloseCallback: () => void;
+    public onErrorCallback: (error: string) => void;
+    public onDataCallback: (message: string) => void;
 
     public dataSend: string[] = [];
     public lastSend: string;
 
     onOpened(callback: () => void) {
         this.countPortReceived += 1;
-        this.opOpenCallback = callback;
+        this.onOpenCallback = callback;
     }
 
     onData(callback: (message: string) => void) {
-        this.opDataCallback = callback;
+        this.onDataCallback = callback;
     }
 
     onClose(callback: () => void) {
-        this.opCloseCallback = callback;
+        this.onCloseCallback = callback;
     }
 
     onError(callback: (errorMessage: string) => void) {
-        this.opErrorCallback = callback;
+        this.onErrorCallback = callback;
     }
 
     open(callback: (err?: string) => void): void {
         this.timesPortOpened += 1;
         this.isOpen = true;
         callback();
-        if (this.opOpenCallback) {
-            this.opOpenCallback();
+        if (this.onOpenCallback) {
+            this.onOpenCallback();
         }
     }
 
@@ -55,8 +55,8 @@ export class SerialPortSpy implements SerialPortInterface {
         }
         this.timesPortClosed += 1;
         this.isOpen = false;
-        if (this.opCloseCallback) {
-            this.opCloseCallback();
+        if (this.onCloseCallback) {
+            this.onCloseCallback();
         }
     }
 

@@ -1,6 +1,6 @@
 import {SerialPortSpy} from './SerialPortSpy';
 
-export class DelayAbleSerialPortSpy extends SerialPortSpy {
+export class AsynchronousSerialPortSpy extends SerialPortSpy {
 
     constructor(public delayTime: number) {
         super();
