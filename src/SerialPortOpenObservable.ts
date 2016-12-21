@@ -10,28 +10,28 @@ export class SerialPortOpenObservable extends Observable<SerialPortInterface> {
 
     private replaySubject: ReplaySubject<SerialPortInterface> = new ReplaySubject(1);
 
-    /**
-     * This is the open port Subscription.
-     */
-    private openPort: Subscription;
+    private openPortSubscription: Subscription;
 
     constructor(private port: SerialPortInterface) {
         super();
     }
 
     protected _subscribe(subscriber: Subscriber<SerialPortInterface>): TeardownLogic {
-        let subscription = this.replaySubject.subscribe(subscriber);
-        if (!this.openPort) {
-            this.openPort = this.openPortObservable().subscribe(() => {
+        if (this.replaySubject.observers.length === 0) {
+            this.openPortSubscription = new Subscription();
+            this.openPortSubscription.add(this.openPortObservable().subscribe(() => {
                 this.replaySubject.next(this.port);
-            }, err => this.replaySubject.error(err));
+            }, err => this.replaySubject.error(err)));
+            this.openPortSubscription.add(this.closePortObservable().subscribe(() => {
+                this.replaySubject.complete();
+            }, err => this.replaySubject.error(err)));
         }
+        const subscription = this.replaySubject.subscribe(subscriber);
         return () => {
             subscription.unsubscribe();
             if (this.replaySubject.observers.length === 0) {
                 this.port.close();
-                this.openPort.unsubscribe();
-                this.openPort = null;
+                this.openPortSubscription.unsubscribe();
                 this.replaySubject = new ReplaySubject(1);
             }
         };
@@ -39,5 +39,9 @@ export class SerialPortOpenObservable extends Observable<SerialPortInterface> {
 
     private openPortObservable(): Observable<void> {
         return Observable.bindNodeCallback<void>(this.port.open.bind(this.port))();
+    }
+
+    private closePortObservable(): Observable<void> {
+        return Observable.bindNodeCallback<void>(this.port.onClose.bind(this.port))();
     }
 }

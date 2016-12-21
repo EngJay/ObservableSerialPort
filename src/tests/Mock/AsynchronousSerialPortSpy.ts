@@ -1,6 +1,7 @@
 import {SerialPortSpy} from './SerialPortSpy';
+import {SerialPortInterface} from '../../SerialPortInterface';
 
-export class AsynchronousSerialPortSpy extends SerialPortSpy {
+export class AsynchronousSerialPortSpy extends SerialPortSpy implements SerialPortInterface {
 
     constructor(public delayTime: number) {
         super();
@@ -9,16 +10,6 @@ export class AsynchronousSerialPortSpy extends SerialPortSpy {
     open(callback: (err?: string) => void): void {
         setTimeout(() => {
             super.open(callback);
-        }, this.delayTime);
-    }
-
-    send(buffer: string, callback?: (err: string | null, bytesWritten: number) => void): void {
-        if (!this.isOpen) {
-            throw 'Port is not open';
-        }
-
-        setTimeout(() => {
-            super.send(buffer, callback);
         }, this.delayTime);
     }
 
